@@ -3,6 +3,11 @@ package com.example.demo.controller;
 import com.example.demo.bean.UserBean;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.eureka.consumer.ConsumerApplication;
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.RedisConfig;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +31,9 @@ public class LoginController {
     //将Service注入Web层
     @Autowired
     UserService userService;
+
+    @Autowired
+    RedisTemplate redisTemplate;
 
     @RequestMapping("/login")
     public String show(){
@@ -51,10 +61,57 @@ public class LoginController {
         return "success";
     }
 
+    public void changeRedisDB(int i)
+    {
+        LettuceConnectionFactory lettuceConnectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
+        lettuceConnectionFactory.setDatabase(i);
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+        lettuceConnectionFactory.resetConnection();
+        lettuceConnectionFactory.afterPropertiesSet();
+    }
+
     @RequestMapping(value = "/addUser",method = RequestMethod.POST)
     public String addUser(String name, String password){
 
-        System.out.print("进来了1!!!");
+//        LettuceConnectionFactory lettuceConnectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
+//        lettuceConnectionFactory.setDatabase(1);
+//        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+//        lettuceConnectionFactory.resetConnection();
+//        lettuceConnectionFactory.afterPropertiesSet();
+
+        //JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+        //jedisConnectionFactory.setDatabase(9);
+        //factory.setDatabase("1");
+        //LettuceFactories jedisConnectionFactory = (LettuceFactories) redisTemplate.getConnectionFactory();
+
+        //jedisConnectionFactory.setDatabase(1);
+        //RedisTemplate redisTemplate = new RedisTemplate();
+        //更换redisDB
+        changeRedisDB(2);
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        //redisTemplate.opsForValue().set("stringValue2","stringValue2");
+        //redisTemplate.opsForValue().sets
+        //valueOperations.set("myFistRedis","goodgood");
+
+        Map redisMap = new HashMap();
+        redisMap.put("a","1");
+//        redisMap.put("b","2");
+        redisTemplate.opsForValue().set("redisMap1",redisMap);
+//        Object data = valueOperations.get("redisMap");
+//        redisMap = (Map) data;
+//        String a = (String) redisMap.get("a");
+
+//        ArrayList list = new ArrayList<Map>();
+//        list.add(redisMap);
+//        list.add(redisMap);
+//        list.add(redisMap);
+//        redisTemplate.opsForValue().set("redislist",list);
+//        ArrayList Outlist = new ArrayList<Map>();
+//        Object dataList = valueOperations.get("redislist");
+//        Outlist = (ArrayList) dataList;
+//        redisTemplate.opsForValue().set("Outlist",Outlist);
+
+       // System.out.print("进来了1!!!"+a);
         userService.addUser(name,password);
         return "success";
     }
