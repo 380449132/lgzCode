@@ -68,10 +68,12 @@ public class LoginController {
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         lettuceConnectionFactory.resetConnection();
         lettuceConnectionFactory.afterPropertiesSet();
+
     }
 
     @RequestMapping(value = "/addUser",method = RequestMethod.POST)
     public String addUser(String name, String password){
+
 
 //        LettuceConnectionFactory lettuceConnectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
 //        lettuceConnectionFactory.setDatabase(1);
@@ -87,7 +89,7 @@ public class LoginController {
         //jedisConnectionFactory.setDatabase(1);
         //RedisTemplate redisTemplate = new RedisTemplate();
         //更换redisDB
-        changeRedisDB(2);
+        changeRedisDB(3);
         ValueOperations valueOperations = redisTemplate.opsForValue();
         //redisTemplate.opsForValue().set("stringValue2","stringValue2");
         //redisTemplate.opsForValue().sets
