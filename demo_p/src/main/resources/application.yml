@@ -1,8 +1,9 @@
 spring:
  redis:
-   host: localhost
+   host: 127.0.0.1
    port: 6379
    database: 0
+   password:
  datasource:
 
   url: jdbc:oracle:thin:@127.0.0.1:1521:orcl2018

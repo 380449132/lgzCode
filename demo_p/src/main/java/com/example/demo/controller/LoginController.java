@@ -3,26 +3,22 @@ package com.example.demo.controller;
 import com.example.demo.bean.UserBean;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import com.eureka.consumer.ConsumerApplication;
 import com.alibaba.fastjson.JSONObject;
-import com.example.demo.RedisConfig;
 
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.concurrent.TimeUnit;
 
 
 @Controller
@@ -34,6 +30,69 @@ public class LoginController {
 
     @Autowired
     RedisTemplate redisTemplate;
+
+    //set后自动释放这个key,释放时间
+    private long lockTime = 10000;
+    //获取锁超时时间
+    private long timeout = 60000;
+
+
+    public void changeRedisDB(int i)
+    {
+        LettuceConnectionFactory lettuceConnectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
+        lettuceConnectionFactory.setDatabase(i);
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+        lettuceConnectionFactory.resetConnection();
+        lettuceConnectionFactory.afterPropertiesSet();
+
+    }
+
+    public Boolean getLock(String key, String value, Long ms) {
+        long startTime = System.currentTimeMillis();
+        while (true) {
+            Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, value, ms, TimeUnit.MILLISECONDS);
+            if (flag) {
+                return true;
+            }
+
+            //避免一直无限获取锁
+            if (System.currentTimeMillis() - startTime > timeout) {
+                return false;
+            }
+
+            try {
+                System.out.print("{}重试锁"+  key);
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 解锁
+     * @param key
+     * @param value
+     * @return
+     */
+    public Boolean unLock(String key, String value) {
+        String script =
+                "if redis.call('get',KEYS[1]) == ARGV[1] then" +
+                        "   return redis.call('del',KEYS[1]) " +
+                        "else" +
+                        "   return 0 " +
+                        "end";
+
+        // 构造RedisScript并指定返回类类型
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
+        // 参数一：redisScript，参数二：key列表，参数三：arg（可多个）
+        Object result = redisTemplate.execute(redisScript, Arrays.asList(key), value);
+
+        return "1".equals(result.toString());
+    }
+
+    //@Autowired
+    //RedissLockUtil redissLockUtil;
 
     @RequestMapping("/login")
     public String show(){
@@ -61,15 +120,6 @@ public class LoginController {
         return "success";
     }
 
-    public void changeRedisDB(int i)
-    {
-        LettuceConnectionFactory lettuceConnectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
-        lettuceConnectionFactory.setDatabase(i);
-        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-        lettuceConnectionFactory.resetConnection();
-        lettuceConnectionFactory.afterPropertiesSet();
-
-    }
 
     @RequestMapping(value = "/addUser",method = RequestMethod.POST)
     public String addUser(String name, String password){
@@ -89,6 +139,7 @@ public class LoginController {
         //jedisConnectionFactory.setDatabase(1);
         //RedisTemplate redisTemplate = new RedisTemplate();
         //更换redisDB
+
         changeRedisDB(3);
         ValueOperations valueOperations = redisTemplate.opsForValue();
         //redisTemplate.opsForValue().set("stringValue2","stringValue2");
@@ -96,9 +147,10 @@ public class LoginController {
         //valueOperations.set("myFistRedis","goodgood");
 
         Map redisMap = new HashMap();
-        redisMap.put("a","1");
+        redisMap.put("abc","abc");
 //        redisMap.put("b","2");
-        redisTemplate.opsForValue().set("redisMap1",redisMap);
+        //String StringJson = (String) JSONObject.toJSONString(redisMap);
+        //redisTemplate.opsForValue().set("redisMap1",StringJson);
 //        Object data = valueOperations.get("redisMap");
 //        redisMap = (Map) data;
 //        String a = (String) redisMap.get("a");
@@ -109,11 +161,22 @@ public class LoginController {
 //        list.add(redisMap);
 //        redisTemplate.opsForValue().set("redislist",list);
 //        ArrayList Outlist = new ArrayList<Map>();
-//        Object dataList = valueOperations.get("redislist");
+       // Object redisMap1 = valueOperations.get("redisMap1");
 //        Outlist = (ArrayList) dataList;
 //        redisTemplate.opsForValue().set("Outlist",Outlist);
 
        // System.out.print("进来了1!!!"+a);
+        String StringRedisMap  = (String) valueOperations.get("redisMap1");
+        Map RedisMap = new HashMap();
+        RedisMap = JSONObject.parseObject(StringRedisMap,Map.class);
+        String a = (String) redisMap.get("a");
+        System.out.print(a);
+
+        //redissLockUtil.tryLock("firstKey", 10, 10);
+
+        Boolean flag =  getLock("Mic001","1",lockTime);
+        unLock("Mic001","1");
+
         userService.addUser(name,password);
         return "success";
     }
