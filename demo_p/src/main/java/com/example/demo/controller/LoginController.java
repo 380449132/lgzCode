@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.bean.UserBean;
+import com.example.demo.service.CommToolService;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
 
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,69 +29,14 @@ public class LoginController {
     //将Service注入Web层
     @Autowired
     UserService userService;
-
+    @Autowired
+    CommToolService commToolService;
     @Autowired
     RedisTemplate redisTemplate;
 
     //set后自动释放这个key,释放时间
-    private long lockTime = 10000;
-    //获取锁超时时间
-    private long timeout = 60000;
+    private long lockTime = 5000;
 
-
-    public void changeRedisDB(int i)
-    {
-        LettuceConnectionFactory lettuceConnectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
-        lettuceConnectionFactory.setDatabase(i);
-        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-        lettuceConnectionFactory.resetConnection();
-        lettuceConnectionFactory.afterPropertiesSet();
-
-    }
-
-    public Boolean getLock(String key, String value, Long ms) {
-        long startTime = System.currentTimeMillis();
-        while (true) {
-            Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, value, ms, TimeUnit.MILLISECONDS);
-            if (flag) {
-                return true;
-            }
-
-            //避免一直无限获取锁
-            if (System.currentTimeMillis() - startTime > timeout) {
-                return false;
-            }
-
-            try {
-                System.out.print("{}重试锁"+  key);
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * 解锁
-     * @param key
-     * @param value
-     * @return
-     */
-    public Boolean unLock(String key, String value) {
-        String script =
-                "if redis.call('get',KEYS[1]) == ARGV[1] then" +
-                        "   return redis.call('del',KEYS[1]) " +
-                        "else" +
-                        "   return 0 " +
-                        "end";
-
-        // 构造RedisScript并指定返回类类型
-        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
-        // 参数一：redisScript，参数二：key列表，参数三：arg（可多个）
-        Object result = redisTemplate.execute(redisScript, Arrays.asList(key), value);
-
-        return "1".equals(result.toString());
-    }
 
     //@Autowired
     //RedissLockUtil redissLockUtil;
@@ -122,7 +69,7 @@ public class LoginController {
 
 
     @RequestMapping(value = "/addUser",method = RequestMethod.POST)
-    public String addUser(String name, String password){
+    public String addUser(String name, String password) throws IOException {
 
 
 //        LettuceConnectionFactory lettuceConnectionFactory = (LettuceConnectionFactory) redisTemplate.getConnectionFactory();
@@ -140,7 +87,7 @@ public class LoginController {
         //RedisTemplate redisTemplate = new RedisTemplate();
         //更换redisDB
 
-        changeRedisDB(3);
+        commToolService.changeRedisDB(3);
         ValueOperations valueOperations = redisTemplate.opsForValue();
         //redisTemplate.opsForValue().set("stringValue2","stringValue2");
         //redisTemplate.opsForValue().sets
@@ -173,11 +120,18 @@ public class LoginController {
         System.out.print(a);
 
         //redissLockUtil.tryLock("firstKey", 10, 10);
-
-        Boolean flag =  getLock("Mic001","1",lockTime);
-        unLock("Mic001","1");
+        //获取锁
+        Boolean flag =  commToolService.getLock("Mic001","1",lockTime);
+        //释放锁
+        if (flag == true) {
+            commToolService.unLock("Mic001", "1");
+        }
 
         userService.addUser(name,password);
+
+
+
+
         return "success";
     }
 
@@ -266,6 +220,8 @@ public class LoginController {
         outmap.put("retCode","1");
         outmap.put("retMsg","接口调用成功666!!");
 
+
+
         String name = (String) map.get("name");
         String password = (String) map.get("password");
         if (org.thymeleaf.util.StringUtils.isEmpty(name)){
@@ -282,8 +238,18 @@ public class LoginController {
             return outmap;
 
         }
+        //获取锁
+        Boolean flag =  commToolService.getLock("micService001","1",lockTime);
+        if (flag==false){
+            outmap.put("retCode","-2");
+            outmap.put("retMsg","获取微服务micService001锁失败!!");
+            System.out.println("入参:"+JSONObject.toJSONString(map)+"出参:"+JSONObject.toJSONString(outmap));
+            return outmap;
+        }
 
         userService.addUser(name,password);
+        //释放锁
+        commToolService.unLock("micService001","1");
         System.out.println("入参:"+JSONObject.toJSONString(map)+"出参:"+JSONObject.toJSONString(outmap));
         return outmap;
     }
