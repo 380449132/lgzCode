@@ -12,6 +12,7 @@ import java.io.IOException;
 @MapperScan("com.example.demo.mapper")
 public class SpringBootStartApplication extends SpringBootServletInitializer {
 
+
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
 //		String command1 = "cmd /c d:\\eureka_server\\provider8082\\启动提供者-8082.bat";
@@ -24,6 +25,7 @@ public class SpringBootStartApplication extends SpringBootServletInitializer {
 //			e.printStackTrace();
 //		}
 		// 注意这里要指向原先用main方法执行的Application启动类3
+
         return builder.sources(DemoApplication.class);
 	}
 }

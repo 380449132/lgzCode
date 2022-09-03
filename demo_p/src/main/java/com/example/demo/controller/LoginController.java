@@ -4,10 +4,10 @@ import com.example.demo.bean.UserBean;
 import com.example.demo.service.CommToolService;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,12 +17,10 @@ import com.alibaba.fastjson.JSONObject;
 
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-
+@PropertySource("classpath:demo.properties")
 @Controller
 public class LoginController {
 
@@ -37,13 +35,15 @@ public class LoginController {
     //set后自动释放这个key,释放时间
     private long lockTime = 5000;
 
+    @Value("${test.name}")
+    private  String testName;
 
     //@Autowired
     //RedissLockUtil redissLockUtil;
 
     @RequestMapping("/login")
     public String show(){
-
+        System.out.print("进来了1!!!"+testName);
         return "login";
     }
 
@@ -147,13 +147,13 @@ public class LoginController {
         String password = (String) map.get("password");
         if (org.thymeleaf.util.StringUtils.isEmpty(name)){
             outmap.put("retCode","-1");
-            outmap.put("retMsg","入参姓名不能为空!!");
+            outmap.put("retMsg","入参姓名不能为空!!"+name+password);
             return outmap;
 
         }
         if (org.thymeleaf.util.StringUtils.isEmpty(password)){
             outmap.put("retCode","-1");
-            outmap.put("retMsg","入参密码不能为空!!");
+            outmap.put("retMsg","入参密码不能为空!!"+name+password);
             return outmap;
 
         }
