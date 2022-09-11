@@ -54,6 +54,15 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Override
+    @Transactional
+    public String selectIdByName(String name, String password) {
+        System.out.print("进来了888!!!"+testName);
+        String id = userMapper.selectIdByName(name,password);
+        return id;
+
+    }
+
 
 
 

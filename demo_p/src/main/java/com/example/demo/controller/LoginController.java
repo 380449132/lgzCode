@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
+import org.thymeleaf.util.StringUtils;
 
 
 import java.io.IOException;
@@ -122,11 +123,11 @@ public class LoginController {
 
         //redissLockUtil.tryLock("firstKey", 10, 10);
         //获取锁
-        Boolean flag =  commToolService.getLock("Mic001","1",lockTime);
-        //释放锁
-        if (flag == true) {
-            commToolService.unLock("Mic001", "1");
-        }
+//        Boolean flag =  commToolService.getLock("Mic001","1",lockTime);
+//        //释放锁
+//        if (flag == true) {
+//            commToolService.unLock("Mic001", "1");
+//        }
 
         userService.addUser(name,password);
 
@@ -135,6 +136,7 @@ public class LoginController {
 
         return "success";
     }
+
 
     @ResponseBody
     @RequestMapping(value = "/addUserInter",method = RequestMethod.POST)
@@ -213,6 +215,9 @@ public class LoginController {
         return outmap;
     }
 
+    /*
+     *micService001 使用redis锁
+     * */
     @ResponseBody
     @RequestMapping(value = "/micService001",method = RequestMethod.POST)
     public Map micService001(@RequestBody Map map){
@@ -254,6 +259,8 @@ public class LoginController {
         System.out.println("入参:"+JSONObject.toJSONString(map)+"出参:"+JSONObject.toJSONString(outmap));
         return outmap;
     }
+
+
 
 
 }

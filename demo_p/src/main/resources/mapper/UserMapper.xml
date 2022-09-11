@@ -10,5 +10,10 @@
         insert into lgz_user(id,name,password) VALUEs(to_char(sysdate,'yyyymmddhh24miss'),#{name},#{password} )
     </insert>
 
+    <select id="selectIdByName" parameterType="String" resultType="String">
+        SELECT id FROM lgz_user WHERE name = #{name} AND password = #{password}
+    </select>
+
+
 
 </mapper>

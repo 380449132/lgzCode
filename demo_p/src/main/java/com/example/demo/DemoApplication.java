@@ -11,8 +11,7 @@ import java.net.URLClassLoader;
 
 
 
-
-@SpringBootApplication
+ @SpringBootApplication
 @MapperScan("com.example.demo.mapper")
 public class DemoApplication {
 

@@ -16,3 +16,4 @@ mybatis:
  type-aliases-package: com.example.demo.bean
  configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
