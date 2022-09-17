@@ -1,0 +1,22 @@
+server:
+   port: 8888
+spring:
+   application:
+      name: eunke-configweb
+   cloud:
+      config:
+         server:
+            git:
+               # 配置git仓库地址
+               uri: https://github.com/380449132/lgzPro.git
+               # 访问git仓库的用户名
+               username: 380449132
+               # 访问git仓库的用户密码 如果Git仓库为公开仓库，可以不填写用户名和密码，如果是私有仓库需要填写
+               password: 380449132@qq.com
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka/
+    #register-with-eureka: false
+    #fetch-registry: false
+
