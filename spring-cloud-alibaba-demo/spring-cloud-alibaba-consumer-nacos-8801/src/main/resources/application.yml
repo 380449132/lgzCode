@@ -1,0 +1,11 @@
+server:
+  port: 8801  #端口号
+spring:
+  application:
+    name: spring-cloud-alibaba-consumer #服务名
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848  #Nacos server 的地址
+service-url:
+  nacos-user-service: http://spring-cloud-alibaba-provider #服务提供者的服务名
