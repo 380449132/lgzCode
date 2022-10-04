@@ -1,0 +1,21 @@
+server:
+  port: 8001
+spring:
+  application:
+    name: spring-cloud-alibaba-provider
+  cloud:
+    nacos:
+      discovery:
+
+        server-addr: localhost:8848
+    sentinel:
+      transport:
+
+        dashboard: localhost:8080
+
+        port: 8719
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

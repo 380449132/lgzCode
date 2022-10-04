@@ -2,30 +2,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<!--父工程-->
 	<parent>
 		<groupId>net.biancheng.c</groupId>
 		<version>1.0-SNAPSHOT</version>
 		<artifactId>spring-cloud-alibaba-demo</artifactId>
 	</parent>
 	<groupId>net.biancheng.c</groupId>
-	<artifactId>spring-cloud-alibaba-provider-8001</artifactId>
+	<artifactId>spring-cloud-alibaba-sentinel-service-8401</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>spring-cloud-alibaba-provider-8001</name>
+	<name>spring-cloud-alibaba-sentinel-service-8401</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
 	<dependencies>
+		<!--Nacos 服务发现依赖-->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
 		</dependency>
-		<!--Snetinel依赖-->
+		<!--Snetinel 依赖-->
 		<dependency>
 			<groupId>com.alibaba.cloud</groupId>
 			<artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
 		</dependency>
+		<!--SpringCloud ailibaba sentinel-datasource-nacos 后续做持久化用到-->
 		<dependency>
 			<groupId>com.alibaba.csp</groupId>
 			<artifactId>sentinel-datasource-nacos</artifactId>
@@ -38,10 +39,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-
 		</dependency>
-
-
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -58,17 +60,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!--Spring Cloud Alibaba Nacos discovery -->
-		<dependency>
-			<groupId>com.alibaba.cloud</groupId>
-			<artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>fastjson</artifactId>
-			<version>1.2.9</version>
-	    </dependency>
-
 	</dependencies>
 	<build>
 		<plugins>
