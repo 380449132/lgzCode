@@ -1,0 +1,25 @@
+server:
+  port: 9100
+spring:
+  application:
+    name: zuul
+  cloud:
+      nacos:
+        discovery:
+           server-addr: localhost:8848
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: routes
+
+#对于每个微服务请求，每5秒内 只能有2次请求#
+zuul:
+  ratelimit:
+    enabled: true #开启限流
+    default-policy: # 默认策略
+        limit: 2 #每个刷新窗口请求数
+        quota: 5 #每个刷新窗口总请求时间(秒)
+        refresh-interval: 5 #刷新窗口时间(秒),默认60秒
+        type: url

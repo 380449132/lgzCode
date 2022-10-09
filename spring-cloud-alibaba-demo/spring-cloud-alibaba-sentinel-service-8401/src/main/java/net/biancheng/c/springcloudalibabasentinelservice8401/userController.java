@@ -43,6 +43,27 @@ public class userController {
         return "c语言中文网提醒您，TestD服务访问失败! 您已被限流，请稍后重试";
     }
 
+    @PostMapping("/micSerDoPost")
+    @SentinelResource(value = "micSerDoPost-resource", blockHandler = "blockHandler", fallback = "handlerFallback") //通过注解定义资源
+    @ResponseBody
+    public Map<String,Object> micSerDoPost(@RequestBody Map inputMap) throws UnsupportedEncodingException {
+
+        initFlowRules(); //调用初始化流控规则的方法
+        initDegradeRule();
+        System.out.println("我是流控者micSerDoPost：" + serverPort);
+        //调用consum
+        String param = JSONObject.toJSONString(inputMap);
+        String httpReturn = sendPost(conSumIp+"/micSerDoPost",param);
+        String userId = (String) inputMap.get("userId");
+        System.out.println(httpReturn);
+
+        Map outMap = new HashMap();
+        outMap=JSONObject.parseObject(httpReturn);
+        System.out.println("入参:"+JSONObject.toJSONString(inputMap) + "出参:"+JSONObject.toJSONString(outMap));
+        //return "c语言中文网提醒您，服务访问成功------micSer001：" + serverPort+",微服务返回:";
+        return outMap;
+    }
+
     @PostMapping("/micSer001")
     @SentinelResource(value = "micSer001-resource", blockHandler = "blockHandler", fallback = "handlerFallback") //通过注解定义资源
     @ResponseBody
@@ -50,16 +71,16 @@ public class userController {
 
         initFlowRules(); //调用初始化流控规则的方法
         initDegradeRule();
-        System.out.println("c语言中文网提醒您，服务访问成功------micSer001：" + serverPort);
+        System.out.println("我是流控者micSer001：" + serverPort);
         //调用consum
         String param = JSONObject.toJSONString(inputMap);
         String httpReturn = sendPost(conSumIp+"/micSer001",param);
         String userId = (String) inputMap.get("userId");
-        System.out.println(userId);
+        System.out.println(httpReturn);
 
         Map outMap = new HashMap();
-        outMap.put("userId",userId);
-
+        outMap=JSONObject.parseObject(httpReturn);
+        System.out.println("入参:"+JSONObject.toJSONString(inputMap) + "出参:"+JSONObject.toJSONString(outMap));
         //return "c语言中文网提醒您，服务访问成功------micSer001：" + serverPort+",微服务返回:";
         return outMap;
     }
